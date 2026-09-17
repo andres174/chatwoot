@@ -48,11 +48,11 @@ RSpec.describe ConversationPolicy, type: :policy do
         expect(subject).to permit(context, conversation)
       end
 
-      it 'allows access to conversations where the agent is a participant' do
+      it 'denies access to conversations where the agent is only a participant' do
         conversation = create(:conversation, account: account, inbox: inbox, assignee: nil)
         create(:conversation_participant, conversation: conversation, account: account, user: agent)
 
-        expect(subject).to permit(context, conversation)
+        expect(subject).not_to permit(context, conversation)
       end
 
       it 'denies access to unrelated conversations' do

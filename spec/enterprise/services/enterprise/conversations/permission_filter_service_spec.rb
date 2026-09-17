@@ -32,7 +32,7 @@ RSpec.describe Enterprise::Conversations::PermissionFilterService do
     end
 
     context 'when user is a regular agent' do
-      it 'returns all conversations in assigned inboxes' do
+      it 'returns only conversations assigned to the agent' do
         result = Conversations::PermissionFilterService.new(
           account.conversations,
           agent,
@@ -40,10 +40,10 @@ RSpec.describe Enterprise::Conversations::PermissionFilterService do
         ).perform
 
         expect(result).to include(assigned_conversation)
-        expect(result).to include(unassigned_conversation)
-        expect(result).to include(another_assigned_conversation)
+        expect(result).not_to include(unassigned_conversation)
+        expect(result).not_to include(another_assigned_conversation)
         expect(result).not_to include(another_inbox_conversation)
-        expect(result.count).to eq(3)
+        expect(result.count).to eq(1)
       end
     end
 
@@ -76,11 +76,11 @@ RSpec.describe Enterprise::Conversations::PermissionFilterService do
           test_account
         ).perform
 
-        # Should have access to all conversations
-        expect(result.count).to eq(3)
+        # Custom roles do not expand conversation visibility for agents in this fork.
+        expect(result.count).to eq(1)
         expect(result).to include(assigned_conversation)
-        expect(result).to include(unassigned_conversation)
-        expect(result).to include(other_assigned_conversation)
+        expect(result).not_to include(unassigned_conversation)
+        expect(result).not_to include(other_assigned_conversation)
         expect(result).not_to include(other_inbox_conversation)
       end
     end
@@ -124,7 +124,7 @@ RSpec.describe Enterprise::Conversations::PermissionFilterService do
     end
 
     context 'when user has conversation_unassigned_manage permission' do
-      it 'returns unassigned conversations AND mine' do
+      it 'returns only conversations assigned to the agent' do
         # Create a new isolated test environment
         test_account = create(:account)
         test_inbox = create(:inbox, account: test_account)
@@ -153,19 +153,16 @@ RSpec.describe Enterprise::Conversations::PermissionFilterService do
           test_account
         ).perform
 
-        # Should see unassigned conversations AND conversations assigned to this agent
-        expect(result.count).to eq(2)
-        expect(result).to include(unassigned_conversation)
+        expect(result.count).to eq(1)
+        expect(result).not_to include(unassigned_conversation)
         expect(result).to include(assigned_conversation)
-
-        # Should NOT include conversations assigned to others
         expect(result).not_to include(other_assigned_conversation)
         expect(result).not_to include(other_inbox_conversation)
       end
     end
 
     context 'when user has both participating and unassigned permissions (hierarchical test)' do
-      it 'gives higher priority to unassigned_manage over participating_manage' do
+      it 'returns only conversations assigned to the agent' do
         # Create a new isolated test environment
         test_account = create(:account)
         test_inbox = create(:inbox, account: test_account)
@@ -195,11 +192,8 @@ RSpec.describe Enterprise::Conversations::PermissionFilterService do
           test_account
         ).perform
 
-        # Should behave the same as conversation_unassigned_manage test
-        # - Show both unassigned and assigned to this agent
-        # - Do not show conversations assigned to others
-        expect(result.count).to eq(2)
-        expect(result).to include(unassigned_conversation)
+        expect(result.count).to eq(1)
+        expect(result).not_to include(unassigned_conversation)
         expect(result).to include(assigned_to_agent)
         expect(result).not_to include(other_assigned_conversation)
         expect(result).not_to include(other_inbox_conversation)

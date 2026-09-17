@@ -14,7 +14,7 @@ class ConversationPolicy < ApplicationPolicy
   private
 
   def agent_can_view_conversation?
-    inbox_access? || team_access?
+    assigned_to_user?
   end
 
   def administrator?
@@ -23,16 +23,6 @@ class ConversationPolicy < ApplicationPolicy
 
   def agent_bot?
     user.is_a?(AgentBot)
-  end
-
-  def inbox_access?
-    user.inboxes.where(account_id: account&.id).exists?(id: record.inbox_id)
-  end
-
-  def team_access?
-    return false if record.team_id.blank?
-
-    user.teams.where(account_id: account&.id).exists?(id: record.team_id)
   end
 
   def assigned_to_user?

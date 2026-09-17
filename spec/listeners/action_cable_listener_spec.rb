@@ -280,7 +280,8 @@ describe ActionCableListener do
         conversation_data: {
           id: conversation.id,
           account_id: account.id,
-          inbox_id: conversation.inbox_id
+          inbox_id: conversation.inbox_id,
+          assignee_id: conversation.assignee_id
         }
       )
 

@@ -1,7 +1,4 @@
 class Conversations::UnreadCounts::Counter
-  MANAGE_ALL_PERMISSION = 'conversation_manage'.freeze
-  UNASSIGNED_PERMISSION = 'conversation_unassigned_manage'.freeze
-  PARTICIPATING_PERMISSION = 'conversation_participating_manage'.freeze
   BUILD_LOCK_TTL = 15.minutes.to_i
   BUILD_WAIT_TIMEOUT = 30.seconds.to_i
   BUILD_WAIT_INTERVAL = 0.1.seconds
@@ -147,23 +144,13 @@ class Conversations::UnreadCounts::Counter
 
   def permission_mode
     @permission_mode ||=
-      if !custom_role_agent? || permissions.include?(MANAGE_ALL_PERMISSION)
+      if account_user&.administrator?
         :base
-      elsif permissions.include?(UNASSIGNED_PERMISSION)
-        :unassigned_and_mine
-      elsif permissions.include?(PARTICIPATING_PERMISSION)
+      elsif account_user&.agent?
         :mine
       else
         :none
       end
-  end
-
-  def custom_role_agent?
-    account_user&.agent? && account_user.custom_role_id.present?
-  end
-
-  def permissions
-    account_user&.permissions || []
   end
 
   def account_user

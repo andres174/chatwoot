@@ -31,9 +31,9 @@ class SearchService
   end
 
   def filter_conversations
-    conversations_query = current_account.conversations.where(inbox_id: accessable_inbox_ids)
-                                         .joins('INNER JOIN contacts ON conversations.contact_id = contacts.id')
-                                         .where("cast(conversations.display_id as text) ILIKE :search OR contacts.name ILIKE :search OR contacts.email
+    conversations_query = conversations_base_query
+                          .joins('INNER JOIN contacts ON conversations.contact_id = contacts.id')
+                          .where("cast(conversations.display_id as text) ILIKE :search OR contacts.name ILIKE :search OR contacts.email
                             ILIKE :search OR contacts.phone_number ILIKE :search OR contacts.identifier ILIKE :search", search: "%#{search_query}%")
 
     if current_account.feature_enabled?('advanced_search')
@@ -105,9 +105,9 @@ class SearchService
   end
 
   def message_base_query
-    query = current_account.messages.where('created_at >= ?', 3.months.ago)
+    query = current_account.messages.where('messages.created_at >= ?', 3.months.ago)
     query = query.where(inbox_id: accessable_inbox_ids) unless should_skip_inbox_filtering?
-    query
+    restrict_messages_by_assignment(query)
   end
 
   def apply_message_filters(query)
@@ -151,6 +151,24 @@ class SearchService
 
   def should_skip_inbox_filtering?
     account_user.administrator? || user_has_access_to_all_inboxes?
+  end
+
+  def restrict_conversations_by_assignment(query)
+    return query if account_user.administrator?
+
+    query.assigned_to(current_user)
+  end
+
+  def conversations_base_query
+    return current_account.conversations if account_user.administrator?
+
+    restrict_conversations_by_assignment(current_account.conversations.where(inbox_id: accessable_inbox_ids))
+  end
+
+  def restrict_messages_by_assignment(query)
+    return query if account_user.administrator?
+
+    query.joins(:conversation).where(conversations: { assignee_id: current_user.id })
   end
 
   def user_has_access_to_all_inboxes?
