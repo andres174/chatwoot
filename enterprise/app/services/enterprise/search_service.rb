@@ -18,7 +18,12 @@ module Enterprise::SearchService
   def build_where_conditions
     conditions = { account_id: current_account.id }
     conditions[:inbox_id] = accessable_inbox_ids unless should_skip_inbox_filtering?
+    conditions[:conversation_id] = assigned_conversation_ids unless account_user.administrator?
     conditions
+  end
+
+  def assigned_conversation_ids
+    current_account.conversations.assigned_to(current_user).pluck(:id)
   end
 
   def apply_filters(where_conditions)

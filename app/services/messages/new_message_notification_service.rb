@@ -32,6 +32,7 @@ class Messages::NewMessageNotificationService
 
     participating_users.uniq.each do |participant|
       next if already_notified?(participant)
+      next unless can_view_conversation?(participant)
 
       NotificationBuilder.new(
         notification_type: 'participating_conversation_new_message',
@@ -47,5 +48,9 @@ class Messages::NewMessageNotificationService
   # So we don't need to notify them again
   def already_notified?(user)
     conversation.notifications.exists?(user: user, secondary_actor: message)
+  end
+
+  def can_view_conversation?(user)
+    account.account_users.find_by(user: user)&.administrator? || conversation.assignee_id == user.id
   end
 end
