@@ -252,7 +252,7 @@ RSpec.describe Webhooks::WhatsappEventsJob do
         ]
       }
       allow(Whatsapp::IncomingMessageWhatsappCloudService).to receive(:new).and_return(process_service)
-      expect(Whatsapp::IncomingMessageWhatsappCloudService).to receive(:new).with(inbox: other_channel.inbox, params: wb_params)
+      expect(Whatsapp::IncomingMessageWhatsappCloudService).to receive(:new).with(inbox: other_channel.inbox, params: wb_params, raw_body: nil)
       job.perform_now(wb_params)
     end
 
@@ -359,7 +359,7 @@ RSpec.describe Webhooks::WhatsappEventsJob do
         ]
       }
       allow(Whatsapp::IncomingMessageWhatsappCloudService).to receive(:new).and_return(process_service)
-      expect(Whatsapp::IncomingMessageWhatsappCloudService).not_to receive(:new).with(inbox: other_channel.inbox, params: wb_params)
+      expect(Whatsapp::IncomingMessageWhatsappCloudService).not_to receive(:new).with(inbox: other_channel.inbox, params: wb_params, raw_body: nil)
       job.perform_now(wb_params)
     end
   end

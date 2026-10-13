@@ -10,13 +10,19 @@ import { useI18n } from 'vue-i18n';
 import MessageFormatter from 'shared/helpers/MessageFormatter.js';
 import { BUS_EVENTS } from 'shared/constants/busEvents';
 import { MESSAGE_VARIANTS, ORIENTATION } from '../constants';
+import AdReferralPreview from '../AdReferralPreview.vue';
 
 const props = defineProps({
   hideMeta: { type: Boolean, default: false },
 });
 
-const { variant, orientation, inReplyTo, shouldGroupWithNext } =
-  useMessageContext();
+const {
+  variant,
+  orientation,
+  inReplyTo,
+  shouldGroupWithNext,
+  contentAttributes,
+} = useMessageContext();
 const { t } = useI18n();
 
 const varaintBaseMap = {
@@ -103,6 +109,10 @@ const replyToPreview = computed(() => {
       },
     ]"
   >
+    <AdReferralPreview
+      v-if="contentAttributes?.referral"
+      :referral="contentAttributes.referral"
+    />
     <div
       v-if="inReplyTo"
       class="p-2 -mx-1 mb-2 rounded-lg cursor-pointer bg-n-alpha-black1"
