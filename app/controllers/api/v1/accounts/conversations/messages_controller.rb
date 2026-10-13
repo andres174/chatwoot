@@ -27,10 +27,12 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
 
   def retry
     return if message.blank?
+    return head :unprocessable_entity unless message.failed?
+
+    message.update!(source_id: nil) if @conversation.inbox.whatsapp? && (message.outgoing? || message.template?)
 
     service = Messages::StatusUpdateService.new(message, 'sent')
     service.perform
-    message.update!(content_attributes: {})
     ::SendReplyJob.perform_later(message.id)
   rescue StandardError => e
     render_could_not_create_error(e.message)

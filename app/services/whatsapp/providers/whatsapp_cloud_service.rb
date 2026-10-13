@@ -133,11 +133,19 @@ class Whatsapp::Providers::WhatsappCloudService < Whatsapp::Providers::BaseServi
   end
 
   def attachment_payload(attachment, type, message)
+    normalize_audio_content_type(attachment) if type == 'audio'
     payload = { link: attachment.download_url }
     payload[:voice] = true if type == 'audio' && attachment.file.content_type.to_s.split(';').first == 'audio/ogg'
     payload[:caption] = message.outgoing_content unless %w[audio sticker].include?(type)
     payload[:filename] = attachment.file.filename if type == 'document'
     payload
+  end
+
+  def normalize_audio_content_type(attachment)
+    # Marcel identifies Ogg/Opus as audio/opus, which Meta rejects when fetching the media URL.
+    return unless attachment.file.content_type == 'audio/opus'
+
+    attachment.file.blob.update!(content_type: 'audio/ogg')
   end
 
   def error_message(response)
