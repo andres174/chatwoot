@@ -24,6 +24,15 @@ module Whatsapp::IncomingMessageServiceHelpers
     messages_data.first[:type]
   end
 
+  # Present when the contact messaged from a Click-to-WhatsApp ad or a post
+  def referral
+    messages_data.first[:referral]
+  end
+
+  def raw_payload
+    @raw_payload ||= JSON.parse(raw_body) if raw_body.present?
+  end
+
   def message_content(message)
     # TODO: map interactive messages back to button messages in chatwoot
     message.dig(:text, :body) ||

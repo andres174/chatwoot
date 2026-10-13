@@ -5,7 +5,9 @@ class Webhooks::WhatsappEventsJob < MutexApplicationJob
   # holder finishes and silently drop its message.
   retry_on LockAcquisitionError, wait: 2.seconds, attempts: 20
 
-  def perform(params = {})
+  # raw_body is Meta's original webhook body, persisted on created messages so it can be forwarded in webhooks
+  def perform(params = {}, raw_body = nil)
+    @raw_body = raw_body
     channel = find_channel_from_whatsapp_business_payload(params)
 
     if channel_is_inactive?(channel)
@@ -73,15 +75,15 @@ class Webhooks::WhatsappEventsJob < MutexApplicationJob
   end
 
   def handle_message_echo(channel, params)
-    Whatsapp::IncomingMessageWhatsappCloudService.new(inbox: channel.inbox, params: params, outgoing_echo: true).perform
+    Whatsapp::IncomingMessageWhatsappCloudService.new(inbox: channel.inbox, params: params, outgoing_echo: true, raw_body: @raw_body).perform
   end
 
   def handle_message_events(channel, params)
     case channel.provider
     when 'whatsapp_cloud'
-      Whatsapp::IncomingMessageWhatsappCloudService.new(inbox: channel.inbox, params: params).perform
+      Whatsapp::IncomingMessageWhatsappCloudService.new(inbox: channel.inbox, params: params, raw_body: @raw_body).perform
     else
-      Whatsapp::IncomingMessageService.new(inbox: channel.inbox, params: params).perform
+      Whatsapp::IncomingMessageService.new(inbox: channel.inbox, params: params, raw_body: @raw_body).perform
     end
   end
 

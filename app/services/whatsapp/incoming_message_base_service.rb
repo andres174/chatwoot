@@ -5,7 +5,7 @@ class Whatsapp::IncomingMessageBaseService
   include ::Whatsapp::IncomingMessageServiceHelpers
   include ::Whatsapp::IncomingMessageIdentifierHelper
 
-  pattr_initialize [:inbox!, :params!, :outgoing_echo]
+  pattr_initialize [:inbox!, :params!, :outgoing_echo, :raw_body]
 
   def perform
     processed_params
@@ -43,6 +43,7 @@ class Whatsapp::IncomingMessageBaseService
     ActiveRecord::Base.transaction do
       set_conversation
       create_messages
+      stamp_conversation_referral
     end
   end
 
@@ -159,9 +160,6 @@ class Whatsapp::IncomingMessageBaseService
   end
 
   def create_message(message, source_id: nil)
-    content_attrs = outgoing_echo ? { external_echo: true } : {}
-    content_attrs[:in_reply_to_external_id] = @in_reply_to_external_id if @in_reply_to_external_id.present?
-
     @message = @conversation.messages.build(
       content: message_content(message),
       account_id: @inbox.account_id,
@@ -171,8 +169,23 @@ class Whatsapp::IncomingMessageBaseService
       status: outgoing_echo ? :delivered : :sent,
       sender: outgoing_echo ? nil : @contact,
       source_id: (source_id || message[:id]).to_s,
-      content_attributes: content_attrs
+      content_attributes: message_content_attributes,
+      additional_attributes: { whatsapp_payload: raw_payload }.compact
     )
+  end
+
+  def message_content_attributes
+    content_attrs = outgoing_echo ? { external_echo: true } : {}
+    content_attrs[:in_reply_to_external_id] = @in_reply_to_external_id if @in_reply_to_external_id.present?
+    content_attrs[:referral] = referral if referral.present?
+    content_attrs
+  end
+
+  # Click-to-WhatsApp ads: keep the first ad that brought the contact on the conversation for attribution
+  def stamp_conversation_referral
+    return if referral.blank? || @conversation.additional_attributes['referral'].present?
+
+    @conversation.update!(additional_attributes: @conversation.additional_attributes.merge('referral' => referral))
   end
 
   def attach_contact(contact)

@@ -70,6 +70,12 @@
     "RATING_TITLE": "Rating",
     "FEEDBACK_TITLE": "Feedback",
     "REPLY_MESSAGE_NOT_FOUND": "Message not available",
+    "AD_REFERRAL": {
+      "LABEL_AD": "Ad",
+      "LABEL_POST": "Post",
+      "VIEW_AD": "View ad",
+      "AD_ID": "Ad ID: {id}"
+    },
     "CARD": {
       "SHOW_LABELS": "Show labels",
       "HIDE_LABELS": "Hide labels",
