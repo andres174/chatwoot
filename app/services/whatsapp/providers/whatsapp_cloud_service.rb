@@ -117,11 +117,6 @@ class Whatsapp::Providers::WhatsappCloudService < Whatsapp::Providers::BaseServi
   def send_attachment_message(phone_number, message)
     attachment = message.attachments.first
     type = %w[image audio video].include?(attachment.file_type) ? attachment.file_type : 'document'
-    type_content = {
-      'link': attachment.download_url
-    }
-    type_content['caption'] = message.outgoing_content unless %w[audio sticker].include?(type)
-    type_content['filename'] = attachment.file.filename if type == 'document'
     response = HTTParty.post(
       "#{phone_id_path}/messages",
       headers: api_headers,
@@ -130,11 +125,19 @@ class Whatsapp::Providers::WhatsappCloudService < Whatsapp::Providers::BaseServi
         :context => whatsapp_reply_context(message),
         'to' => phone_number,
         'type' => type,
-        type.to_s => type_content
+        type.to_s => attachment_payload(attachment, type, message)
       }.to_json
     )
 
     process_response(response, message)
+  end
+
+  def attachment_payload(attachment, type, message)
+    payload = { link: attachment.download_url }
+    payload[:voice] = true if type == 'audio' && attachment.file.content_type.to_s.split(';').first == 'audio/ogg'
+    payload[:caption] = message.outgoing_content unless %w[audio sticker].include?(type)
+    payload[:filename] = attachment.file.filename if type == 'document'
+    payload
   end
 
   def error_message(response)
