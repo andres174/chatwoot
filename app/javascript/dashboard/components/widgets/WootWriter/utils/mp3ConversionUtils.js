@@ -1,4 +1,5 @@
 import lamejs from '@breezystack/lamejs';
+import { convertToOgg } from './oggConversionUtils';
 
 const writeString = (view, offset, string) => {
   // eslint-disable-next-line no-plusplus
@@ -139,6 +140,8 @@ export const convertAudio = async (inputBlob, outputFormat, bitrate = 128) => {
     audio = await convertToWav(inputBlob);
   } else if (outputFormat === 'audio/mp3') {
     audio = await convertToMp3(inputBlob, bitrate);
+  } else if (outputFormat === 'audio/ogg') {
+    audio = await convertToOgg(inputBlob);
   } else {
     throw new Error('Unsupported output format');
   }
