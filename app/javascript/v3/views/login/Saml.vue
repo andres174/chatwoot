@@ -1,6 +1,5 @@
 <script setup>
-import { ref, nextTick, computed, onMounted } from 'vue';
-import { useStore } from 'vuex';
+import { ref, nextTick, onMounted } from 'vue';
 import { required, email } from '@vuelidate/validators';
 import { useVuelidate } from '@vuelidate/core';
 import { useI18n } from 'vue-i18n';
@@ -21,7 +20,6 @@ const props = defineProps({
   },
 });
 
-const store = useStore();
 const { t } = useI18n();
 
 const credentials = ref({
@@ -54,7 +52,6 @@ const validations = {
 
 const v$ = useVuelidate(validations, { credentials });
 
-const globalConfig = computed(() => store.getters['globalConfig/get']);
 const csrfToken = ref('');
 
 onMounted(async () => {
@@ -72,17 +69,6 @@ onMounted(async () => {
     class="flex flex-col w-full min-h-screen py-20 bg-n-brand/5 dark:bg-n-background sm:px-6 lg:px-8"
   >
     <section class="max-w-5xl mx-auto">
-      <img
-        :src="globalConfig.logo"
-        :alt="globalConfig.installationName"
-        class="block w-auto h-8 mx-auto dark:hidden"
-      />
-      <img
-        v-if="globalConfig.logoDark"
-        :src="globalConfig.logoDark"
-        :alt="globalConfig.installationName"
-        class="hidden w-auto h-8 mx-auto dark:block"
-      />
       <h2 class="mt-6 text-3xl font-medium text-center text-n-slate-12">
         {{ t('LOGIN.SAML.TITLE') }}
       </h2>
