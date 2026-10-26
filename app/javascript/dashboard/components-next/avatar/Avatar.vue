@@ -57,22 +57,22 @@ const fileInput = ref(null);
 
 const AVATAR_COLORS = {
   dark: [
-    ['#4B143D', '#FF8DCC'],
-    ['#3F220D', '#FFA366'],
-    ['#2A2A2A', '#ADB1B8'],
-    ['#023B37', '#0BD8B6'],
-    ['#27264D', '#A19EFF'],
-    ['#1D2E62', '#9EB1FF'],
+    ['#4A0507', '#FBC2C4'],
+    ['#4D3E01', '#FEEEAE'],
+    ['#3A3A3A', '#F4F4F4'],
+    ['#163F3D', '#CAEDEB'],
+    ['#0D0848', '#E6E4FC'],
+    ['#072C66', '#C8DCFB'],
   ],
   light: [
-    ['#FBDCEF', '#C2298A'],
-    ['#FFE0BB', '#99543A'],
-    ['#E8E8E8', '#60646C'],
-    ['#CCF3EA', '#008573'],
-    ['#EBEBFE', '#4747C2'],
-    ['#E1E9FF', '#3A5BC7'],
+    ['#FBC2C4', '#87090D'],
+    ['#FEEEAE', '#987901'],
+    ['#F4F4F4', '#6A6A6A'],
+    ['#CAEDEB', '#287571'],
+    ['#E6E4FC', '#170E7E'],
+    ['#C8DCFB', '#0D50BA'],
   ],
-  default: { bg: '#E8E8E8', text: '#60646C' },
+  default: { bg: '#F4F4F4', text: '#6A6A6A' },
 };
 
 const STATUS_CLASSES = computed(() => ({
